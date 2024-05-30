@@ -1,5 +1,6 @@
 <template>
   <div class="content-wrapper">
+    <!-- 侧边栏组件 -->
     <SideBox />
     <div class="route-planner">
       <el-row type="flex" justify="center">
@@ -22,22 +23,34 @@
                 </template>
               </el-autocomplete>
             </el-form-item>
-            <!-- 添加途径地点按钮和提交表单按钮 -->
+            <!-- 交通方式选择 -->
             <el-form-item label="交通方式">
               <el-radio-group v-model="transportMode">
                 <el-radio :label="0">步行</el-radio>
                 <el-radio :label="1">电动车</el-radio>
               </el-radio-group>
             </el-form-item>
-
+            <!-- 添加途径地点按钮和提交表单按钮 -->
             <el-form-item>
               <el-button type="success" icon="el-icon-plus" @click.prevent="addWaypoint">添加途径地点</el-button>
               <el-button type="primary" native-type="submit">生成解决方案</el-button>
             </el-form-item>
           </el-form>
           <!-- 路线规划结果展示区 -->
-          <el-dialog title="路线规划结果" :visible.sync="dialogVisible" width="50%" :before-close="handleClose">
+          <el-dialog title="路线规划结果" :visible.sync="dialogVisible" width="80%" :before-close="handleClose">
             <div v-if="routePlan">
+              <l-map :zoom="13" :center="mapCenter" style="height: 400px; width: 100%">
+                <!-- 地图图层 -->
+                <l-tile-layer :url="tileUrl" />
+                <!-- 路线 -->
+                <l-polyline :lat-lngs="pathPoints"></l-polyline>
+                <!-- 路线点标记 -->
+                <l-marker v-for="(point, index) in pathPoints" :key="index" :lat-lng="point">
+                  <l-popup>{{ routePlan.steps[index] }}</l-popup>
+                </l-marker>
+                <!-- 路线装饰器（有向路径） -->
+                <polyline-decorator :patterns="patterns" />
+              </l-map>
               <h2>路线规划结果</h2>
               <p v-html="formattedSteps"></p>
               <p>总距离: {{ routePlan.totalDistance.toFixed(2) }} 米</p>
@@ -56,9 +69,14 @@
 <script>
 import axios from 'axios';
 import SideBox from '../components/SideBox.vue';
+import { LMap, LTileLayer, LPolyline, LMarker, LPopup } from 'vue2-leaflet';
+import 'leaflet-polylinedecorator';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
 export default {
   components: {
-    SideBox
+    SideBox, LMap, LTileLayer, LPolyline, LMarker, LPopup
   },
   data() {
     return {
@@ -67,7 +85,11 @@ export default {
       routePlan: null,       // 路线规划结果
       locations: [],         // 存储从服务器加载的所有地点数据
       transportMode: 0,      // 默认为步行
-      dialogVisible: false   // 控制悬浮框的可见性
+      dialogVisible: false,  // 控制悬浮框的可见性
+      pathPoints: [],        // 地图上的路径点
+      mapCenter: [39.9042, 116.4074], // 默认地图中心点（北京）
+      tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', // 地图图层URL
+      patterns: [] // 用于polyline-decorator的模式
     };
   },
   created() {
@@ -118,12 +140,37 @@ export default {
       try {
         const response = await axios.post('/api/plan', data);
         this.routePlan = response.data;
+        this.pathPoints = this.getPathPoints(this.routePlan.steps); // 获取路径点
+        this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
         this.dialogVisible = true; // 显示悬浮框
+        this.setPatterns(); // 设置路径装饰模式
       } catch (error) {
         console.error('Error fetching route plan:', error);
         this.routePlan = null;
+        this.pathPoints = [];
         this.dialogVisible = false; // 隐藏悬浮框
       }
+    },
+    // 根据步骤名称获取路径点的经纬度
+    getPathPoints(steps) {
+      return steps.map(step => {
+        const location = this.locations.find(loc => loc.name === step);
+        if (!location) return null;
+        return [location.latitude, location.longitude];
+      }).filter(point => point !== null);
+    },
+    // 设置路径装饰模式（有向路径的箭头）
+    setPatterns() {
+      this.patterns = [
+        {
+          offset: 10,
+          repeat: 100,
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 15,
+            pathOptions: { color: 'blue', fillOpacity: 1, weight: 2 }
+          })
+        }
+      ];
     },
     // 关闭悬浮框的处理函数
     handleClose() {
@@ -137,13 +184,11 @@ export default {
 .content-wrapper {
   display: flex;
   height: 100vh;
-  /* 视图高度全屏 */
 }
 .route-planner {
   width: 60vw;
   padding: 20px;
 }
-
 .dialog-footer {
   text-align: right;
 }
