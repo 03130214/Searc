@@ -13,24 +13,27 @@
         <button @click="searchLocation" class="search-button">搜索</button>
       </div>
 
+      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施</button>
 
-      <!-- <div class="hotspot-search">
-        <button @click="showHotspotDialog = true" class="hotspot-button">附件场所</button>
-      </div>
-      <el-dialog title="输入当前位置" :visible.sync="showHotspotDialog">
-        <el-input v-model="hotspotQuery" placeholder="请输入位置..."></el-input>
-        <div v-if="hotspotData">
-          <ul>
-            <li v-for="(item, index) in hotspotData" :key="index">
-              {{ item.name }} - {{ item.distance }}米
-            </li>
-          </ul>
+      <!-- 新增的对话框组件 -->
+      <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
+        <div>
+          <input type="text" v-model="facilitySearchLocation" placeholder="输入地点名称" class="search-input" />
+          <select v-model="facilityCategory" class="search-input">
+            <option disabled value="">请选择类别</option>
+            <option>超市</option>
+            <option>洗手间</option>
+            <option>食堂</option>
+            <option>宿舍楼</option>
+          </select>
+          <button @click="fetchFacilities" class="search-button">搜索设施</button>
         </div>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="closeHotspotDialog">关闭</el-button>
-          <el-button type="primary" @click="fetchHotspots">查询</el-button>
-        </span>
-      </el-dialog> -->
+        <ul v-if="nearbyFacilities.length">
+          <li v-for="(facility, index) in nearbyFacilities" :key="index">
+            {{ facility.name }} - 距离: {{ facility.distance }}米
+          </li>
+        </ul>
+      </el-dialog>
 
       <div class="route-planner">
         <el-row type="flex" justify="center">
@@ -131,9 +134,12 @@ export default {
       mapCenter: [39.9042, 116.4074], // 默认地图中心点（北京）
       tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', // 地图图层URL
       patterns: [], // 用于polyline-decorator的模式
-      // showHotspotDialog: false,
-      // hotspotQuery: '',
-      // hotspotData: null // 存储从后端获取的热点数据
+
+      showFacilitiesDialog: false,
+      facilitySearchLocation: '',
+      facilityCategory: '',
+      nearbyFacilities: [], // 存储从后端获取的设施数据
+
     };
   },
   mounted() {
@@ -167,24 +173,20 @@ export default {
     fetchLocations() {
       axios.get('/api/innerlocations').then(response => {
         this.locations = response.data;
+        this.addMarkers();
       }).catch(error => console.error('Error loading locations:', error));
     },
 
-    // fetchHotspots() {
-    //   axios.post('/api/hotspots', { location: this.hotspotQuery })
-    //     .then(response => {
-    //       this.hotspotData = response.data; // 保存响应数据到hotspotData
-    //       console.log('Hotspots:', this.hotspotData);
-    //     })
-    //     .catch(error => {
-    //       console.error('Error fetching hotspots:', error);
-    //       this.hotspotData = null; // 出错时清空数据
-    //     });
-    // },
-    // closeHotspotDialog() {
-    //   this.showHotspotDialog = false;
-    //   this.hotspotData = null; // 清空数据
-    // },
+    fetchFacilities() {
+      axios.post('/api/search-facilities', {
+        location: this.facilitySearchLocation,
+        category: this.facilityCategory
+      }).then(response => {
+        this.nearbyFacilities = response.data; // 假设后端返回的是已经按距离排序的设施数组
+      }).catch(error => {
+        console.error('Error fetching facilities:', error);
+      });
+    },
 
     addMarkers() {
       this.markerCluster.clearLayers();
@@ -285,16 +287,19 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .content-wrapper {
   display: flex;
   height: 100vh;
+  background-color: #f5f5f5;
+  /* 轻微灰色背景 */
 }
 
 #map {
   width: 40vw;
   height: 100vh;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* 添加阴影 */
 }
 
 .controls-container {
@@ -302,52 +307,58 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 20px;
 }
 
-.search-container {
+.search-container,
+.route-planner {
+  background: white;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  /* 更显著的阴影 */
+  transition: all 0.3s ease;
+  /* 平滑过渡效果 */
 }
 
 .search-input,
 .search-button,
 .exit-button {
-  width: 80%;
-  padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  /* 输入框和按钮的过渡效果 */
+}
+
+.search-input:focus,
+.search-button:hover,
+.exit-button:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  /* 鼠标悬停时的阴影效果 */
 }
 
 .exit-button {
-  align-self: flex-end;
-  margin-bottom: 10px;
   background-color: #ff6347;
   /* Tomato color */
   color: white;
-  width: auto;
-  padding: 5px 10px;
-  font-size: 12px;
-}
-
-.exit-button:hover {
-  background-color: #ee5c42;
 }
 
 .suggestions-list {
-  width: 80%;
+  width: 100%;
   background: white;
-  border: 1px solid #ccc;
-  border-top: none;
+  border: 1px solid #ddd;
   max-height: 200px;
   overflow-y: auto;
 }
 
 .suggestion-item {
   padding: 10px;
+  transition: background-color 0.2s ease;
+  /* 列表项背景过渡 */
 }
 
 .suggestion-item:hover {
@@ -355,32 +366,10 @@ export default {
 }
 
 .route-planner {
-  width: 60vw;
-  padding: 20px;
+  margin-top: 20px;
 }
 
 .dialog-footer {
   text-align: right;
-}
-
-.hotspot-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  /* 绿色按钮 */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.hotspot-button:hover {
-  background-color: #45a049;
-}
-
-.hotspot-search {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
 }
 </style>
