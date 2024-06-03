@@ -5,7 +5,7 @@
     <div class="route-planner">
       <el-row type="flex" justify="center">
         <el-col :span="12">
-          <h1>路线规划</h1>
+          <h1><font color="grey">路线规划</font></h1>
           <!-- 表单，防止表单默认提交行为 -->
           <el-form @submit.native.prevent="handleSubmit">
             <!-- 起始地点输入框，自动完成 -->

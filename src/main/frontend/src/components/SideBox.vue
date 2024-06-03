@@ -5,7 +5,7 @@
             <el-menu-item index="1" @click="changeRoute('/home')">Home</el-menu-item>
             <el-menu-item index="2" @click="changeRoute('/map')">地图</el-menu-item>
             <el-menu-item index="3" @click="changeRoute('/plan')">行程规划</el-menu-item>
-            <el-menu-item index="4" @click="changeRoute('/innner')">内部地图</el-menu-item>
+            <el-menu-item index="4" @click="changeRoute('/inner')">内部地图</el-menu-item>
             <el-menu-item index="5" @click="changeRoute('/diary')">日记</el-menu-item>
             <el-menu-item index="6" @click="performLogout">登出</el-menu-item>
         </el-menu>

@@ -4,6 +4,7 @@ import Home from '../views/UserHome.vue';
 import Login from '../views/UserLogin.vue';
 import Register from '../views/UserRegister.vue';  // 确保路径正确
 import Map from '../views/UserMap.vue';  // 确保路径正确
+import InnerMap from '../views/UserInnerMap.vue';  // 确保路径正确
 import Plan from '../views/UserPlan.vue';  // 确保路径正确
 import Diary from '../views/DiaryMain.vue';  // 确保路径正确
 import EditDiary from '../views/EditDiary.vue';
@@ -41,6 +42,12 @@ export default new Router({
       path: '/map',
       name: 'Map',
       component: Map,
+      meta: { requiresAuth: true }  // 需要登录才能访问
+    },
+    {
+      path: '/inner',
+      name: 'InnerMap',
+      component: InnerMap,
       meta: { requiresAuth: true }  // 需要登录才能访问
     },
     {
