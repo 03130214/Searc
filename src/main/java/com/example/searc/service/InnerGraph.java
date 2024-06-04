@@ -1,15 +1,16 @@
 package com.example.searc.service;
 
+import com.example.searc.dto.FacilitySearchResult;
 import com.example.searc.model.InnerLocation;
 import java.util.*;
 
 public class InnerGraph {
     private Map<InnerLocation, List<InnerEdge>> adjacencyList;
-    private Map<String, Double> distanceMap;  // 存储两个地点间距离的映射
+    private Map<String, Double> distanceMap; // 存储两个地点间距离的映射
 
     public InnerGraph() {
-        this.adjacencyList = new HashMap<>();
-        this.distanceMap = new HashMap<>();
+        this.adjacencyList = new HashMap<>();// 该地点连的边
+        this.distanceMap = new HashMap<>();// 两点的距离
     }
 
     public void addVertex(InnerLocation location) {
@@ -37,14 +38,51 @@ public class InnerGraph {
                 .orElse(1.0);
     }
 
+    public List<FacilitySearchResult> bfsFindLocationsByType(InnerLocation start, String type, int maxResults) {
+        Queue<InnerLocation> queue = new LinkedList<>();
+        Map<InnerLocation, Double> distanceToStart = new HashMap<>(); // 保存到起始点的距离
+        Set<InnerLocation> visited = new HashSet<>();
+        List<FacilitySearchResult> foundLocations = new ArrayList<>();
+
+        queue.add(start);
+        visited.add(start);
+        distanceToStart.put(start, 0.0); // 起始点的距离为0
+
+        while (!queue.isEmpty() && foundLocations.size() < maxResults) {
+            InnerLocation current = queue.poll();
+            double currentDistance = distanceToStart.get(current);
+
+            for (InnerEdge edge : getNeighbors(current)) {
+                InnerLocation neighbor = edge.getTarget();
+                double totalDistance = currentDistance + edge.getDistance(); // 更新到该邻居的距离
+
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                    distanceToStart.put(neighbor, totalDistance); // 更新距离
+
+                    if (neighbor.getType().equals(type) && !neighbor.equals(start)) {
+                        foundLocations.add(new FacilitySearchResult(neighbor.getName(), totalDistance));
+                        if (foundLocations.size() == maxResults)
+                            break;
+                    }
+                }
+            }
+        }
+
+        // 按距离排序
+        Collections.sort(foundLocations, Comparator.comparingDouble(FacilitySearchResult::getDistance));
+        return foundLocations;
+    }
+
     public List<InnerLocation> findShortestPath(InnerGraph graph, InnerLocation start, List<InnerLocation> waypoints) {
         List<InnerLocation> path = aStarSearch(start, waypoints.get(waypoints.size() - 1));
         for (int i = waypoints.size() - 2; i >= 0; i--) {
             List<InnerLocation> partialPath = aStarSearch(waypoints.get(i + 1), waypoints.get(i));
-            partialPath.remove(0);  // 移除重复的起点
+            partialPath.remove(0); // 移除重复的起点
             path.addAll(partialPath);
         }
-        path.add(start);  // 添加起点到路径末尾，形成闭环
+        path.add(start); // 添加起点到路径末尾，形成闭环
         return path;
     }
 
@@ -95,7 +133,7 @@ public class InnerGraph {
             totalPath.add(current);
             current = cameFrom.get(current);
         }
-        totalPath.add(current);  // 添加起点
+        totalPath.add(current); // 添加起点
         Collections.reverse(totalPath);
         return totalPath;
     }

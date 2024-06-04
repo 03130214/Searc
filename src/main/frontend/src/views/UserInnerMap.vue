@@ -10,12 +10,10 @@
             {{ location.name }}
           </li>
         </ul>
-        <button @click="searchLocation" class="search-button">搜索</button>
       </div>
 
-      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施</button>
-
-      <!-- 新增的对话框组件 -->
+      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施(最短距离)</button>
+      <!-- 对话框组件 -->
       <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
         <div>
           <input type="text" v-model="facilitySearchLocation" placeholder="输入地点名称" class="search-input" />
@@ -25,15 +23,26 @@
             <option>洗手间</option>
             <option>食堂</option>
             <option>宿舍楼</option>
+            <option>景点</option>
+            <option>教学楼</option>
+            <option>商店</option>
+            <option>饭店</option>
+            <option>图书馆</option>
+            <option>咖啡馆</option>
+            <option>甜品店</option>
+            <option>浴室</option>
+            <option>宿舍楼</option>
+
           </select>
           <button @click="fetchFacilities" class="search-button">搜索设施</button>
         </div>
         <ul v-if="nearbyFacilities.length">
           <li v-for="(facility, index) in nearbyFacilities" :key="index">
-            {{ facility.name }} - 距离: {{ facility.distance }}米
+            {{ facility.locationName }} - 距离: {{ facility.distance.toFixed(2) }}米
           </li>
         </ul>
       </el-dialog>
+
 
       <div class="route-planner">
         <el-row type="flex" justify="center">
@@ -177,16 +186,27 @@ export default {
       }).catch(error => console.error('Error loading locations:', error));
     },
 
+
+
     fetchFacilities() {
-      axios.post('/api/search-facilities', {
-        location: this.facilitySearchLocation,
-        category: this.facilityCategory
-      }).then(response => {
-        this.nearbyFacilities = response.data; // 假设后端返回的是已经按距离排序的设施数组
-      }).catch(error => {
-        console.error('Error fetching facilities:', error);
-      });
+      const requestData = {
+        startLocationName: this.facilitySearchLocation,
+        facilityType: this.facilityCategory
+      };
+
+      axios.post('/api/search-facilities', requestData)
+        .then(response => {
+          // 直接使用返回的数据，假设数据结构已正确
+          this.nearbyFacilities = response.data;
+        })
+        .catch(error => {
+          console.error('Error fetching facilities:', error);
+        });
     },
+
+
+
+
 
     addMarkers() {
       this.markerCluster.clearLayers();

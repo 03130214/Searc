@@ -11,6 +11,8 @@ import com.example.searc.model.InnerLocation;
 import com.example.searc.model.InnerRoad;
 import com.example.searc.repository.InnerLocationRepository;
 import com.example.searc.repository.InnerRoadRepository;
+import com.example.searc.dto.FacilitySearchRequest;
+import com.example.searc.dto.FacilitySearchResult;
 
 /**
  * 服务类，用于处理路线规划的请求。
@@ -23,6 +25,13 @@ public class InnerRouteService {
     @Autowired
     private InnerRoadRepository roadRepository;
 
+
+    public List<FacilitySearchResult> findClosestFacilities(FacilitySearchRequest request) {
+        InnerLocation startLocation = findLocationByName(request.getStartLocationName());
+        InnerGraph graph = buildGraph(locationRepository.findAll(), roadRepository.findAll());
+        return graph.bfsFindLocationsByType(startLocation, request.getFacilityType(), 4);
+    }
+    
     /**
      * 根据路线请求计算路线规划。
      * 
