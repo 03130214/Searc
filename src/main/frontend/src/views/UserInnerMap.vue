@@ -15,33 +15,39 @@
       <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施(最短距离)</button>
       <!-- 对话框组件 -->
       <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
-        <div>
-          <input type="text" v-model="facilitySearchLocation" placeholder="输入地点名称" class="search-input" />
-          <select v-model="facilityCategory" class="search-input">
-            <option disabled value="">请选择类别</option>
-            <option>超市</option>
-            <option>洗手间</option>
-            <option>食堂</option>
-            <option>宿舍楼</option>
-            <option>景点</option>
-            <option>教学楼</option>
-            <option>商店</option>
-            <option>饭店</option>
-            <option>图书馆</option>
-            <option>咖啡馆</option>
-            <option>甜品店</option>
-            <option>浴室</option>
-            <option>宿舍楼</option>
-
-          </select>
-          <button @click="fetchFacilities" class="search-button">搜索设施</button>
-        </div>
-        <ul v-if="nearbyFacilities.length">
-          <li v-for="(facility, index) in nearbyFacilities" :key="index">
-            {{ facility.locationName }} - 距离: {{ facility.distance.toFixed(2) }}米
-          </li>
-        </ul>
-      </el-dialog>
+  <div>
+    <!-- 使用 Element UI 的自动完成组件 -->
+    <el-autocomplete
+      v-model="facilitySearchLocation"
+      :fetch-suggestions="querySearch"
+      placeholder="输入地点名称"
+      @select="handleSelectFacility"
+      class="search-input"
+    ></el-autocomplete>
+    <select v-model="facilityCategory" class="search-input">
+      <option disabled value="">请选择类别</option>
+      <option>超市</option>
+      <option>洗手间</option>
+      <option>食堂</option>
+      <option>宿舍楼</option>
+      <option>景点</option>
+      <option>教学楼</option>
+      <option>商店</option>
+      <option>饭店</option>
+      <option>图书馆</option>
+      <option>咖啡馆</option>
+      <option>甜品店</option>
+      <option>浴室</option>
+      <option>宿舍楼</option>
+    </select>
+    <button @click="fetchFacilities" class="search-button">搜索设施</button>
+  </div>
+  <ul v-if="nearbyFacilities.length">
+    <li v-for="(facility, index) in nearbyFacilities" :key="index">
+      {{ facility.locationName }} - 距离: {{ parseFloat(facility.distance).toFixed(2) }} 米
+    </li>
+  </ul>
+</el-dialog>
 
 
       <div class="route-planner">
