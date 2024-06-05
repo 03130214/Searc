@@ -85,8 +85,8 @@ public class InnerRouteService {
     
         List<InnerLocation> shortestTimePath = graph.findShortestPath(graph, startLocation, waypoints);
     
-        double totalDistance = calculateTotalDistance(graph, shortestTimePath);
-        double totalTime = calculateTotalTime(graph, shortestTimePath, routeRequest.getTransportMode());
+        double totalDistance = calculateTotalDistance1(graph, shortestTimePath);
+        double totalTime = calculateTotalDistance(graph, shortestTimePath);
     
         return new RoutePlan(convertSteps(shortestTimePath), totalDistance, totalTime);
     }
@@ -114,10 +114,18 @@ public class InnerRouteService {
             .orElseThrow(() -> new IllegalArgumentException("Location not found with id: " + id));
     }
 
-    private double calculateTotalDistance(InnerGraph graph, List<InnerLocation> path) {
+    private double calculateTotalDistance(InnerGraph graph, List<InnerLocation> path) {//权重路径
         double totalDistance = 0.0;
         for (int i = 0; i < path.size() - 2; i++) {
             totalDistance += graph.getDistance(path.get(i), path.get(i + 1));
+        }
+        return totalDistance;
+    }
+
+    private double calculateTotalDistance1(InnerGraph graph, List<InnerLocation> path) {//最短时间的距离
+        double totalDistance = 0.0;
+        for (int i = 0; i < path.size() - 2; i++) {
+            totalDistance += graph.getDistance1(path.get(i), path.get(i + 1));
         }
         return totalDistance;
     }

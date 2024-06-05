@@ -12,7 +12,7 @@
         </ul>
       </div>
 
-      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施(最短距离)</button>
+      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施</button>
       <!-- 对话框组件 -->
       <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
         <div>

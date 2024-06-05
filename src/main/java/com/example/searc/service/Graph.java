@@ -248,7 +248,6 @@ public class Graph {
             partialPath.remove(0);  // 移除重复的起点
             path.addAll(partialPath);
         }
-        path.add(start);  // 添加起点到路径末尾，形成闭环
         return path;
     }
 

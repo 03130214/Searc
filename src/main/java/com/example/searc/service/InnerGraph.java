@@ -7,10 +7,11 @@ import java.util.*;
 public class InnerGraph {
     private Map<InnerLocation, List<InnerEdge>> adjacencyList;
     private Map<String, Double> distanceMap; // 存储两个地点间距离的映射
-
+    private Map<String, Double> distanceMap1;
     public InnerGraph() {
         this.adjacencyList = new HashMap<>();// 该地点连的边
-        this.distanceMap = new HashMap<>();// 两点的距离
+        this.distanceMap = new HashMap<>();// 两点的权重距离
+        this.distanceMap1 = new HashMap<>();// 两点的距离
     }
 
     public void addVertex(InnerLocation location) {
@@ -19,7 +20,8 @@ public class InnerGraph {
 
     public void addEdge(InnerLocation source, InnerLocation destination, double distance, double weight, double congestionFactor) {
         adjacencyList.get(source).add(new InnerEdge(destination, distance, weight, congestionFactor));
-        distanceMap.put(source.getId() + "-" + destination.getId(), weight);
+        distanceMap.put(source.getId() + "-" + destination.getId(), weight);//权重
+        distanceMap1.put(source.getId() + "-" + destination.getId(), distance);//距离
     }
     
 
@@ -29,6 +31,10 @@ public class InnerGraph {
 
     public double getDistance(InnerLocation start, InnerLocation end) {
         return distanceMap.getOrDefault(start.getId() + "-" + end.getId(), Double.MAX_VALUE);
+    }
+
+    public double getDistance1(InnerLocation start, InnerLocation end) {
+        return distanceMap1.getOrDefault(start.getId() + "-" + end.getId(), Double.MAX_VALUE);
     }
 
     public double getCongestionFactor(InnerLocation start, InnerLocation end) {
@@ -101,13 +107,20 @@ public class InnerGraph {
     
 
     private List<InnerLocation> aStarSearch(InnerLocation start, InnerLocation goal) {
-        PriorityQueue<InnerLocation> openSet = new PriorityQueue<>(Comparator.comparingDouble(InnerLocation::getFCost));
+        PriorityQueue<InnerLocation> openSet = new PriorityQueue<>(Comparator.comparingDouble(InnerLocation::getFCost));//优先队列
         start.setGCost(0);
         start.setFCost(start.getGCost() + heuristic(start, goal));
         openSet.add(start);
-
-        Map<InnerLocation, InnerLocation> cameFrom = new HashMap<>();
-        Map<InnerLocation, Double> gScore = new HashMap<>();
+        // 使用一个优先队列来存储所有待检查的节点（InnerLocation），
+        // 这些节点根据它们的 fCost（即 gCost + heuristic）排序。
+        // fCost 是从起点到该点的已知最低成本（gCost）加上从该点到目标点的启发式估计成本（heuristic）。
+        // 这确保了每次从队列中取出的都是当前估计总成本最低的节点。
+        Map<InnerLocation, InnerLocation> cameFrom = new HashMap<>();//路径重建映射
+        // cameFrom 是一个映射，用于最后重建路径。它记录了到达每个节点的最优路径上的前一个节点。
+        Map<InnerLocation, Double> gScore = new HashMap<>();//成本跟踪
+        // gScore 是一个映射，记录从起点到图中每个节点的最短路径的成本。
+        // 初始时，起点的 gScore 设为 0（因为从起点到自身的距离是 0），
+        // 其他所有节点设为无穷大，表示开始时没有已知的路径到这些节点。
         adjacencyList.keySet().forEach(v -> gScore.put(v, Double.MAX_VALUE));
         gScore.put(start, 0.0);
 
@@ -140,7 +153,8 @@ public class InnerGraph {
         double dy = a.getLatitude() - b.getLatitude();
         return Math.sqrt(dx * dx + dy * dy);
     }
-
+    // 启发式函数是 A* 算法的核心，用于估计从当前节点到目标节点的最小成本。
+    // 在这段代码中，启发式函数的实现细节没有显示，但通常使用如欧几里得距离或曼哈顿距离等。
     private List<InnerLocation> reconstructPath(Map<InnerLocation, InnerLocation> cameFrom, InnerLocation current) {
         List<InnerLocation> totalPath = new ArrayList<>();
         while (cameFrom.containsKey(current)) {
