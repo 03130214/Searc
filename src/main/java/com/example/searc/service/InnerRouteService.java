@@ -98,7 +98,7 @@ public class InnerRouteService {
         roads.forEach(road -> {
             InnerLocation start = findLocationById(road.getStartLocationId());
             InnerLocation end = findLocationById(road.getEndLocationId());
-            double weight = road.getDistance() / (speed * road.getCongestionFactor());
+            double weight = road.getflag() == 1 ? (road.getDistance() / (speed * road.getCongestionFactor())):(road.getDistance() / 2.0*road.getCongestionFactor());
             graph.addEdge(start, end, road.getDistance(), weight, road.getCongestionFactor());
         });
         return graph;

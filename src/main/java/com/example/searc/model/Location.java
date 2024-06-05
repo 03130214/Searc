@@ -25,6 +25,8 @@ public class Location {
     @Column(nullable = false)
     private Integer popularity;
 
+    @Column(nullable = false)
+    private Double score;
     // 添加 gCost 和 fCost 字段，并将其标记为 @Transient
     @Transient
     public double gCost;  // 实际成本
@@ -34,12 +36,13 @@ public class Location {
 
     public Location() {}
 
-    public Location(String name, String type, Double latitude, Double longitude, Integer popularity) {
+    public Location(String name, String type, Double latitude, Double longitude, Integer popularity,Double score) {
         this.name = name;
         this.type = type;
         this.latitude = latitude;
         this.longitude = longitude;
         this.popularity = popularity;
+        this.score=score;
     }
 
     // 生成 getter 和 setter 方法
@@ -89,6 +92,14 @@ public class Location {
 
     public void setPopularity(Integer popularity) {
         this.popularity = popularity;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
     }
 
     public double getGCost() {

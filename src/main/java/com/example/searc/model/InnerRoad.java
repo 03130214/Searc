@@ -21,14 +21,17 @@ public class InnerRoad {
     @Column
     private double congestionFactor;  // 拥堵系数
 
+    @Column
+    private Long flag;  // 可否通行
     // 构造函数、getter和setter
     public InnerRoad() {}
 
-    public InnerRoad(Long startLocationId, Long endLocationId, double distance, double congestionFactor) {
+    public InnerRoad(Long startLocationId, Long endLocationId, double distance, double congestionFactor,Long flag) {
         this.startLocationId = startLocationId;
         this.endLocationId = endLocationId;
         this.distance = distance;
         this.congestionFactor = congestionFactor;
+        this.flag=flag;
     }
 
     // Getter 和 Setter 方法
@@ -70,5 +73,13 @@ public class InnerRoad {
 
     public void setCongestionFactor(double congestionFactor) {
         this.congestionFactor = congestionFactor;
+    }
+
+    public Long getflag() {
+        return flag;
+    }
+
+    public void setflag(Long flag) {
+        this.flag = flag;
     }
 }
