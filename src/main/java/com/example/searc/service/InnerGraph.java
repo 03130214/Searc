@@ -17,10 +17,11 @@ public class InnerGraph {
         adjacencyList.putIfAbsent(location, new ArrayList<>());
     }
 
-    public void addEdge(InnerLocation source, InnerLocation destination, double distance, double congestionFactor) {
-        adjacencyList.get(source).add(new InnerEdge(destination, distance, congestionFactor));
-        distanceMap.put(source.getId() + "-" + destination.getId(), distance);
+    public void addEdge(InnerLocation source, InnerLocation destination, double distance, double weight, double congestionFactor) {
+        adjacencyList.get(source).add(new InnerEdge(destination, distance, weight, congestionFactor));
+        distanceMap.put(source.getId() + "-" + destination.getId(), weight);
     }
+    
 
     public List<InnerEdge> getNeighbors(InnerLocation location) {
         return adjacencyList.getOrDefault(location, new ArrayList<>());
@@ -76,15 +77,28 @@ public class InnerGraph {
     }
 
     public List<InnerLocation> findShortestPath(InnerGraph graph, InnerLocation start, List<InnerLocation> waypoints) {
-        List<InnerLocation> path = aStarSearch(start, waypoints.get(waypoints.size() - 1));
-        for (int i = waypoints.size() - 2; i >= 0; i--) {
-            List<InnerLocation> partialPath = aStarSearch(waypoints.get(i + 1), waypoints.get(i));
-            partialPath.remove(0); // 移除重复的起点
-            path.addAll(partialPath);
+        List<InnerLocation> path = new ArrayList<>();
+        InnerLocation current = start;
+    
+        for (InnerLocation waypoint : waypoints) {
+            List<InnerLocation> segment = aStarSearch(current, waypoint);
+            if (!path.isEmpty()) {
+                segment.remove(0); // 移除重复的起点
+            }
+            path.addAll(segment);
+            current = waypoint;
         }
-        path.add(start); // 添加起点到路径末尾，形成闭环
+    
+        // 添加从最后一个途经点回到起点的路径
+        List<InnerLocation> returnPath = aStarSearch(current, start);
+        if (!path.isEmpty()) {
+            returnPath.remove(0); // 移除重复的起点
+        }
+        path.addAll(returnPath);
+    
         return path;
     }
+    
 
     private List<InnerLocation> aStarSearch(InnerLocation start, InnerLocation goal) {
         PriorityQueue<InnerLocation> openSet = new PriorityQueue<>(Comparator.comparingDouble(InnerLocation::getFCost));
@@ -105,7 +119,7 @@ public class InnerGraph {
 
             for (InnerEdge edge : getNeighbors(current)) {
                 InnerLocation neighbor = edge.getTarget();
-                double tentativeGScore = gScore.get(current) + edge.getDistance();
+                double tentativeGScore = gScore.get(current) + edge.getWeight();
                 if (tentativeGScore < gScore.get(neighbor)) {
                     cameFrom.put(neighbor, current);
                     gScore.put(neighbor, tentativeGScore);
@@ -142,23 +156,30 @@ public class InnerGraph {
         InnerLocation target;
         double distance;
         double congestionFactor;
-
-        public InnerEdge(InnerLocation target, double distance, double congestionFactor) {
+        double weight; // 新增权重属性
+    
+        public InnerEdge(InnerLocation target, double distance, double weight, double congestionFactor) {
             this.target = target;
             this.distance = distance;
+            this.weight = weight;
             this.congestionFactor = congestionFactor;
         }
-
+    
         public InnerLocation getTarget() {
             return target;
         }
-
+    
         public double getDistance() {
             return distance;
         }
-
+    
+        public double getWeight() {
+            return weight;
+        }
+    
         public double getCongestionFactor() {
             return congestionFactor;
         }
     }
+    
 }

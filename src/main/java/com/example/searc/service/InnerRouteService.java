@@ -51,7 +51,6 @@ public class InnerRouteService {
             .collect(Collectors.toList());
 
         List<InnerLocation> shortestPath = graph.findShortestPath(graph, startLocation, waypoints);
-        // List<InnerLocation> shortestTimePath = findShortestTimePath(graph, startLocation, waypoints, routeRequest.getTransportMode());
 
         double totalDistance = calculateTotalDistance(graph, shortestPath);
         double totalTime = calculateTotalTime(graph, shortestPath, routeRequest.getTransportMode());
@@ -65,7 +64,42 @@ public class InnerRouteService {
         roads.forEach(road -> {
             InnerLocation start = findLocationById(road.getStartLocationId());
             InnerLocation end = findLocationById(road.getEndLocationId());
-            graph.addEdge(start, end, road.getDistance(), road.getCongestionFactor());
+            double weight = road.getDistance();
+            graph.addEdge(start, end, road.getDistance(), weight, road.getCongestionFactor());
+        });
+        return graph;
+    }
+
+    public RoutePlan calculateRoute1(RouteRequest routeRequest) {
+        List<InnerLocation> locations = locationRepository.findAll();
+        List<InnerRoad> roads = roadRepository.findAll();
+    
+        // 使用修改后的buildGraph方法构建图，以考虑速度和拥堵系数
+        InnerGraph graph = buildGraphForShortestTime(locations, roads, routeRequest.getTransportMode());
+    
+        InnerLocation startLocation = findLocationByName(routeRequest.getStartLocation());
+    
+        List<InnerLocation> waypoints = routeRequest.getWaypoints().stream()
+            .map(this::findLocationByName)
+            .collect(Collectors.toList());
+    
+        List<InnerLocation> shortestTimePath = graph.findShortestPath(graph, startLocation, waypoints);
+    
+        double totalDistance = calculateTotalDistance(graph, shortestTimePath);
+        double totalTime = calculateTotalTime(graph, shortestTimePath, routeRequest.getTransportMode());
+    
+        return new RoutePlan(convertSteps(shortestTimePath), totalDistance, totalTime);
+    }
+    
+    private InnerGraph buildGraphForShortestTime(List<InnerLocation> locations, List<InnerRoad> roads, int transportMode) {
+        double speed = transportMode == 0 ? 2.0 : 6.0; // 假设 0 表示步行，1 表示开车
+        InnerGraph graph = new InnerGraph();
+        locations.forEach(graph::addVertex);
+        roads.forEach(road -> {
+            InnerLocation start = findLocationById(road.getStartLocationId());
+            InnerLocation end = findLocationById(road.getEndLocationId());
+            double weight = road.getDistance() / (speed * road.getCongestionFactor());
+            graph.addEdge(start, end, road.getDistance(), weight, road.getCongestionFactor());
         });
         return graph;
     }
@@ -105,14 +139,4 @@ public class InnerRouteService {
             .collect(Collectors.toList());
     }
 
-    // private List<InnerLocation> findShortestTimePath(InnerGraph graph, InnerLocation start, List<InnerLocation> waypoints, int transportMode) {
-    //     // 如果你需要单独计算最短时间路径，需要实现该方法
-    //     // 可以类似于 findShortestPath 方法，通过使用 A* 算法来考虑拥堵因素
-    //     // 假设 graph.findShortestTimePath 是一个你已经实现的计算最短时间路径的方法
-    //     // return graph.findShortestTimePath(start, waypoints, transportMode);
-
-    //     // 这里提供一个简单的示例实现
-    //     // Note: 这是一个示例，需要你根据具体需求进行修改和完善
-    //     return graph.findShortestPath(graph, start, waypoints);
-    // }
 }

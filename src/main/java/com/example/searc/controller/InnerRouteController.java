@@ -34,6 +34,18 @@ public class InnerRouteController {
         }
     }
 
+    @PostMapping("/innerplan1")
+    public ResponseEntity<RoutePlan> createRoutePlan1(@RequestBody RouteRequest request) {
+        try {
+            // 调用服务层的方法计算路径
+            RoutePlan routePlan = routeService.calculateRoute1(request);
+            return ResponseEntity.ok(routePlan);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping("/search-facilities")
     public ResponseEntity<List<FacilitySearchResult>> searchFacilities(@RequestBody FacilitySearchRequest request) {
         try {

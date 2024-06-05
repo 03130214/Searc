@@ -15,39 +15,34 @@
       <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施(最短距离)</button>
       <!-- 对话框组件 -->
       <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
-  <div>
-    <!-- 使用 Element UI 的自动完成组件 -->
-    <el-autocomplete
-      v-model="facilitySearchLocation"
-      :fetch-suggestions="querySearch"
-      placeholder="输入地点名称"
-      @select="handleSelectFacility"
-      class="search-input"
-    ></el-autocomplete>
-    <select v-model="facilityCategory" class="search-input">
-      <option disabled value="">请选择类别</option>
-      <option>超市</option>
-      <option>洗手间</option>
-      <option>食堂</option>
-      <option>宿舍楼</option>
-      <option>景点</option>
-      <option>教学楼</option>
-      <option>商店</option>
-      <option>饭店</option>
-      <option>图书馆</option>
-      <option>咖啡馆</option>
-      <option>甜品店</option>
-      <option>浴室</option>
-      <option>宿舍楼</option>
-    </select>
-    <button @click="fetchFacilities" class="search-button">搜索设施</button>
-  </div>
-  <ul v-if="nearbyFacilities.length">
-    <li v-for="(facility, index) in nearbyFacilities" :key="index">
-      {{ facility.locationName }} - 距离: {{ parseFloat(facility.distance).toFixed(2) }} 米
-    </li>
-  </ul>
-</el-dialog>
+        <div>
+          <!-- 使用 Element UI 的自动完成组件 -->
+          <el-autocomplete v-model="facilitySearchLocation" :fetch-suggestions="querySearch" placeholder="输入地点名称"
+            @select="handleSelectFacility" class="search-input"></el-autocomplete>
+          <select v-model="facilityCategory" class="search-input">
+            <option disabled value="">请选择类别</option>
+            <option>超市</option>
+            <option>洗手间</option>
+            <option>食堂</option>
+            <option>宿舍楼</option>
+            <option>景点</option>
+            <option>教学楼</option>
+            <option>商店</option>
+            <option>饭店</option>
+            <option>图书馆</option>
+            <option>咖啡馆</option>
+            <option>甜品店</option>
+            <option>浴室</option>
+            <option>宿舍楼</option>
+          </select>
+          <button @click="fetchFacilities" class="search-button">搜索设施</button>
+        </div>
+        <ul v-if="nearbyFacilities.length">
+          <li v-for="(facility, index) in nearbyFacilities" :key="index">
+            {{ facility.locationName }} - 距离: {{ parseFloat(facility.distance).toFixed(2) }} 米
+          </li>
+        </ul>
+      </el-dialog>
 
 
       <div class="route-planner">
@@ -83,7 +78,8 @@
               <!-- 添加途径地点按钮和提交表单按钮 -->
               <el-form-item>
                 <el-button type="success" icon="el-icon-plus" @click.prevent="addWaypoint">添加途径地点</el-button>
-                <el-button type="primary" native-type="submit">生成解决方案</el-button>
+                <el-button type="primary" @click.prevent="handleSubmit('shortestPath')">生成最短路径解决方案</el-button>
+                <el-button type="info" @click.prevent="handleSubmit('shortestTime')">生成最短时间解决方案</el-button>
               </el-form-item>
             </el-form>
             <!-- 路线规划结果展示区 -->
@@ -263,28 +259,29 @@ export default {
       this.waypoints.splice(index, 1);
     },
     // 提交表单时的处理函数，发送数据到后端以生成路线规划
-    async handleSubmit() {
-      const data = {
-        startLocation: this.startLocation,
-        waypoints: this.waypoints.filter(wp => wp.trim() !== ''),
-        transportMode: this.transportMode
-      };
-      try {
-        const response = await axios.post('/api/innerplan', data);
-        this.routePlan = response.data;
-        this.pathPoints = this.getPathPoints(this.routePlan.steps); // 获取路径点
-        this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
-        this.map.setView(this.mapCenter, 20);
+    async handleSubmit(type) {
+    const data = {
+      startLocation: this.startLocation,
+      waypoints: this.waypoints.filter(wp => wp.trim() !== ''),
+      transportMode: this.transportMode
+    };
+    let apiUrl = type === 'shortestTime' ? '/api/innerplan1' : '/api/innerplan';
+    try {
+      const response = await axios.post(apiUrl, data);
+      this.routePlan = response.data;
+      this.pathPoints = this.getPathPoints(this.routePlan.steps); // 获取路径点
+      this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
+      this.map.setView(this.mapCenter, 20);
 
-        this.dialogVisible = true; // 显示悬浮框
-        this.setPatterns(); // 设置路径装饰模式
-      } catch (error) {
-        console.error('Error fetching route plan:', error);
-        this.routePlan = null;
-        this.pathPoints = [];
-        this.dialogVisible = false; // 隐藏悬浮框
-      }
-    },
+      this.dialogVisible = true; // 显示悬浮框
+      this.setPatterns(); // 设置路径装饰模式
+    } catch (error) {
+      console.error(`Error fetching route plan from ${apiUrl}:`, error);
+      this.routePlan = null;
+      this.pathPoints = [];
+      this.dialogVisible = false; // 隐藏悬浮框
+    }
+  },
     // 根据步骤名称获取路径点的经纬度
     getPathPoints(steps) {
       return steps.map(step => {
