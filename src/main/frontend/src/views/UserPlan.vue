@@ -144,6 +144,10 @@ export default {
         this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
         this.dialogVisible = true; // 显示悬浮框
         this.setPatterns(); // 设置路径装饰模式
+        if (this.waypoints.length > 0) {
+            const lastWaypoint = this.waypoints[this.waypoints.length - 1];
+            this.$store.dispatch('selectLocation', lastWaypoint);
+          }
       } catch (error) {
         console.error('Error fetching route plan:', error);
         this.routePlan = null;

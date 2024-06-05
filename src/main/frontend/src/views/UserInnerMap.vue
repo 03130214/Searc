@@ -44,6 +44,14 @@
         </ul>
       </el-dialog>
 
+      <el-dialog title="当前位置" :visible.sync="currentLocationDialogVisible" width="400px" center
+        custom-class="current-location-dialog">
+        <p class="current-location-content">{{ currentLocationInfo }}</p>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="currentLocationDialogVisible = false">关闭</el-button>
+        </span>
+      </el-dialog>
+
 
       <div class="route-planner">
         <el-row type="flex" justify="center">
@@ -151,11 +159,17 @@ export default {
       facilityCategory: '',
       nearbyFacilities: [], // 存储从后端获取的设施数据
 
+      currentLocationDialogVisible: false, // 控制位置通知对话框的显示
+      currentLocationInfo: '', // 存储当前位置信息
     };
   },
   mounted() {
     this.initMap();
 
+
+    // 获取 Vuex 中存储的当前位置并显示弹窗
+    this.currentLocationInfo = this.$store.state.currentLocation;
+    this.currentLocationDialogVisible = true; // 显示对话框
   },
   created() {
     this.fetchLocations(); // 组件创建时加载地点数据
@@ -260,28 +274,28 @@ export default {
     },
     // 提交表单时的处理函数，发送数据到后端以生成路线规划
     async handleSubmit(type) {
-    const data = {
-      startLocation: this.startLocation,
-      waypoints: this.waypoints.filter(wp => wp.trim() !== ''),
-      transportMode: this.transportMode
-    };
-    let apiUrl = type === 'shortestTime' ? '/api/innerplan1' : '/api/innerplan';
-    try {
-      const response = await axios.post(apiUrl, data);
-      this.routePlan = response.data;
-      this.pathPoints = this.getPathPoints(this.routePlan.steps); // 获取路径点
-      this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
-      this.map.setView(this.mapCenter, 20);
+      const data = {
+        startLocation: this.startLocation,
+        waypoints: this.waypoints.filter(wp => wp.trim() !== ''),
+        transportMode: this.transportMode
+      };
+      let apiUrl = type === 'shortestTime' ? '/api/innerplan1' : '/api/innerplan';
+      try {
+        const response = await axios.post(apiUrl, data);
+        this.routePlan = response.data;
+        this.pathPoints = this.getPathPoints(this.routePlan.steps); // 获取路径点
+        this.mapCenter = this.pathPoints[0]; // 将地图中心设置为起点
+        this.map.setView(this.mapCenter, 20);
 
-      this.dialogVisible = true; // 显示悬浮框
-      this.setPatterns(); // 设置路径装饰模式
-    } catch (error) {
-      console.error(`Error fetching route plan from ${apiUrl}:`, error);
-      this.routePlan = null;
-      this.pathPoints = [];
-      this.dialogVisible = false; // 隐藏悬浮框
-    }
-  },
+        this.dialogVisible = true; // 显示悬浮框
+        this.setPatterns(); // 设置路径装饰模式
+      } catch (error) {
+        console.error(`Error fetching route plan from ${apiUrl}:`, error);
+        this.routePlan = null;
+        this.pathPoints = [];
+        this.dialogVisible = false; // 隐藏悬浮框
+      }
+    },
     // 根据步骤名称获取路径点的经纬度
     getPathPoints(steps) {
       return steps.map(step => {
@@ -395,4 +409,24 @@ export default {
 .dialog-footer {
   text-align: right;
 }
+
+.current-location-dialog {
+  /* 对话框的样式调整 */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.current-location-content {
+  /* 对话框内容的样式调整 */
+  font-size: 16px;
+  color: #333;
+  padding: 15px;
+}
+
+.dialog-footer {
+  /* 对话框底部按钮区域的样式调整 */
+  text-align: right;
+  padding: 10px 20px;
+}
+
 </style>
