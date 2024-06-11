@@ -10,17 +10,17 @@
             {{ location.name }}
           </li>
         </ul>
+        <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施</button>
       </div>
 
-      <button @click="showFacilitiesDialog = true" class="search-button">查找附近设施</button>
       <!-- 对话框组件 -->
       <el-dialog title="查找附近设施" :visible.sync="showFacilitiesDialog">
-        <div>
+        <div class="xuanfu">
           <!-- 使用 Element UI 的自动完成组件 -->
           <el-autocomplete v-model="facilitySearchLocation" :fetch-suggestions="querySearch" placeholder="输入地点名称"
             @select="handleSelectFacility" class="search-input"></el-autocomplete>
-          <select v-model="facilityCategory" class="search-input">
-            <option disabled value="">请选择类别</option>
+          <select v-model="facilityCategory" class="search-input1">
+            <option disabled value="">类别</option>
             <option>超市</option>
             <option>洗手间</option>
             <option>食堂</option>
@@ -35,7 +35,7 @@
             <option>浴室</option>
             <option>宿舍楼</option>
           </select>
-          <button @click="fetchFacilities" class="search-button">搜索设施</button>
+          <button @click="fetchFacilities" class="search-button1">搜索设施</button>
         </div>
         <ul v-if="nearbyFacilities.length">
           <li v-for="(facility, index) in nearbyFacilities" :key="index">
@@ -55,39 +55,42 @@
 
       <div class="route-planner">
         <el-row type="flex" justify="center">
-          <el-col :span="12">
-            <h1>
+          <el-col style="width: 90%;" :span="12">
+            <h1 style="text-align: center;">
               <font color="grey">路线规划</font>
             </h1>
             <!-- 表单，防止表单默认提交行为 -->
             <el-form @submit.native.prevent="handleSubmit">
               <!-- 起始地点输入框，自动完成 -->
-              <el-form-item label="起始地点">
+              <el-form-item label="起始地点" style="margin-left: 25%;display: flex;flex-direction: row;">
                 <el-autocomplete v-model="startLocation" :fetch-suggestions="querySearch" placeholder="请输入起始地点"
                   @select="handleSelect" required>
                 </el-autocomplete>
               </el-form-item>
-              <!-- 途径地点输入框，自动完成，动态添加或删除 -->
-              <el-form-item v-for="(waypoint, index) in waypoints" :key="index" :label="'途径地点 ' + (index + 1)">
-                <el-autocomplete v-model="waypoints[index]" :fetch-suggestions="querySearch" placeholder="请输入途径地点"
-                  @select="handleSelect">
-                  <template slot="append">
-                    <el-button type="danger" icon="el-icon-delete" @click.prevent="removeWaypoint(index)">移除</el-button>
-                  </template>
-                </el-autocomplete>
-              </el-form-item>
               <!-- 交通方式选择 -->
-              <el-form-item label="交通方式">
+              <el-form-item style="margin-left: 25%;display: flex;flex-direction: row;" label="交通方式">
                 <el-radio-group v-model="transportMode">
                   <el-radio :label="0">步行</el-radio>
                   <el-radio :label="1">电动车</el-radio>
                 </el-radio-group>
               </el-form-item>
+              <div style="display: flex;flex-direction: column;overflow-y: auto;height: 20vh">
+                <el-form-item style="margin-left: 25%;" v-for="(waypoint, index) in waypoints" :key="index"
+                  :label="'途径地点 ' + (index + 1)">
+                  <el-autocomplete v-model="waypoints[index]" :fetch-suggestions="querySearch" placeholder="请输入途径地点"
+                    @select="handleSelect">
+                    <template slot="append">
+                      <el-button type="danger" icon="el-icon-delete"
+                        @click.prevent="removeWaypoint(index)">移除</el-button>
+                    </template>
+                  </el-autocomplete>
+                </el-form-item>
+              </div>
               <!-- 添加途径地点按钮和提交表单按钮 -->
-              <el-form-item>
+              <el-form-item style="display: flex;margin-left: 15%;margin-top: 10%">
                 <el-button type="success" icon="el-icon-plus" @click.prevent="addWaypoint">添加途径地点</el-button>
-                <el-button type="primary" @click.prevent="handleSubmit('shortestPath')">生成最短路径解决方案</el-button>
-                <el-button type="info" @click.prevent="handleSubmit('shortestTime')">生成最短时间解决方案</el-button>
+                <el-button type="primary" @click.prevent="handleSubmit('shortestPath')">生成最短路径</el-button>
+                <el-button type="info" @click.prevent="handleSubmit('shortestTime')">生成最短时间</el-button>
               </el-form-item>
             </el-form>
             <!-- 路线规划结果展示区 -->
@@ -325,16 +328,24 @@ export default {
 };
 </script>
 <style scoped>
+.xuanfu {
+  border: #a8a8a8;
+  border-radius: 4px;
+  background-color: rgba(34, 34, 34, 0.15);
+}
+
 .content-wrapper {
   display: flex;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: rgba(238, 238, 238, 0.15);
   /* 轻微灰色背景 */
 }
 
 #map {
+  margin-top: 5vh;
+  margin-left: 5vw;
   width: 40vw;
-  height: 100vh;
+  height: 90vh;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   /* 添加阴影 */
 }
@@ -344,11 +355,27 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background-color: rgba(238, 238, 238, 0.45);
+  border: #a8a8a8;
+  border-radius: 12px;
   padding: 20px;
+  margin-top: 5vh;
+  margin-left: 2vw;
+  width: 45vw;
+  height: 80vh;
 }
 
-.search-container,
+.search-container {
+  display: flex;
+  height: 8vh;
+  width: 100%;
+  border: #a8a8a8;
+  border-radius: 12px;
+  background-color: rgba(238, 238, 238, 0.65);
+}
+
 .route-planner {
+  height: 60vh;
   background: white;
   padding: 20px;
   border-radius: 10px;
@@ -358,12 +385,60 @@ export default {
   /* 平滑过渡效果 */
 }
 
-.search-input,
-.search-button,
-.exit-button {
-  width: 100%;
+.search-button1 {
+  width: 10vw;
+  height: 5vh;
+  margin-left: 18vw;
+  margin-bottom: 2vh;
+  background-color: #ff6347;
+  color: #ffffff;
+  border: #ff6347;
+  border-radius: 4px;
+}
+
+.search-button {
+  width: 5vw;
+  height: 5vh;
+  margin-left: 1vw;
+  margin-top: 1.6vh;
+  background-color: #ff6347;
+  color: #ffffff;
+  border: #ff6347;
+  border-radius: 4px;
+}
+
+.search-button:hover,
+.search-button:hover1 {
+  background-color: #da381c;
+}
+
+.search-input1 {
+  width: 15%;
+  margin: 1vw;
   padding: 12px 15px;
-  margin: 8px 0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* 输入框和按钮的过渡效果 */
+}
+
+.search-input {
+  width: 70%;
+  margin: 1vw;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* 输入框和按钮的过渡效果 */
+}
+
+.exit-button {
+  width: 80%;
+  padding: 12px 15px;
+  margin-top: 1%;
+  margin-left: 10%;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -428,5 +503,4 @@ export default {
   text-align: right;
   padding: 10px 20px;
 }
-
 </style>

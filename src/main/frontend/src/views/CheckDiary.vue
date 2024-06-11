@@ -5,6 +5,7 @@
     <select v-model="searchType" class="search-select">
       <option value="title">按标题</option>
       <option value="location">按地点</option>
+      <option value="content">按内容</option>
     </select>
     <div class="search-container">
       <input type="text" v-model="searchQuery" placeholder="请输入..." class="search-input" />
@@ -56,6 +57,8 @@ export default {
         params.title = this.searchQuery;
       } else if (this.searchType === 'location') {
         params.location = this.searchQuery;
+      } else if (this.searchType === 'content') {
+        params.content = this.searchQuery;
       }
 
       axios.get('/api/diaries', { params })
@@ -89,12 +92,14 @@ export default {
 </script>
 
 <style scoped>
-.author{
-  position: absolute;  /* 绝对定位，相对于最近的定位祖先（.diary-entry） */
+.author {
+  position: absolute;
+  /* 绝对定位，相对于最近的定位祖先（.diary-entry） */
   right: 0;
   bottom: 0;
   padding: 5px;
 }
+
 .content-preview {
   text-indent: 20px;
   text-decoration: underline;
@@ -118,10 +123,9 @@ export default {
 .search-select {
   width: 8vw;
   padding: 8px 10px;
-  margin-left: 1.4vw;
+  /* margin-left: 1.4vw; */
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: 16px;
   color: #333;
@@ -133,7 +137,6 @@ export default {
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: 16px;
   color: #333;
@@ -149,13 +152,15 @@ export default {
 }
 
 .view-diaries-container {
-  max-width: 800px;
+  height: 90vh;
   margin: 0 auto;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: rgba(247, 247, 247, 0.9);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 5vh;
+  margin-left: 20vw;
 }
 
 .header {
@@ -167,7 +172,6 @@ export default {
 
 .back-button {
   left: 10px;
-  background-color:#f9f9f9;
   border: none;
   font-size: 24px;
   cursor: pointer;
@@ -209,6 +213,8 @@ export default {
 }
 
 .results-container {
+  max-height: 50vh;
+  overflow-y: auto;
   margin-top: 20px;
 }
 

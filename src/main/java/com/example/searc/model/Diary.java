@@ -2,7 +2,6 @@ package com.example.searc.model;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
 
 @Entity
 @Table(name = "diary")
@@ -15,8 +14,10 @@ public class Diary {
     private String username;
     @Column
     private String title;
-    @Column
-    private String content;
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] content;
+
     @Column
     private String location;
     @Column
@@ -54,7 +55,13 @@ public class Diary {
         return hot;
     }
 
+    public byte[] getContent() {
+        return content;
+    }
 
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
     public void setHot(long hot) {
         this.hot = hot;
     }
@@ -73,14 +80,6 @@ public class Diary {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     @Override

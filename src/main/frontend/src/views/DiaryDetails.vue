@@ -1,5 +1,25 @@
 <template>
   <div class="diary-details-container">
+    <v-dialog v-model="dialog" persistent max-width="300px">
+      <v-card>
+        <v-card-title class="text-h5">Success</v-card-title>
+        <v-card-text>点赞成功！</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="dialog = false">OK</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="dialogno" persistent max-width="300px">
+      <v-card>
+        <v-card-title class="text-h5">Success</v-card-title>
+        <v-card-text>取消点赞成功！</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="dialogno = false">OK</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <button class="back-button" @click="goBack">&#8592;</button>
     <button :class="{ 'like-button': !isLiked, 'not-liked': isLiked }" @click="toggleLike">&#128077;</button>
     <article class="diary-article">
@@ -8,10 +28,10 @@
         <p class="diary-meta"><strong>By:</strong>{{ diary.username }}</p>
       </header>
       <div class="diary-content">{{ diary.content }}</div>
-      <div class="author">
-        <p><strong>浏览量：</strong> {{ diary.hot }}<strong>  点赞：</strong> {{ diary.likes }}</p>
-      </div>
     </article>
+    <div class="author">
+      <p><strong>浏览量：</strong> {{ diary.hot }}<strong> 点赞：</strong> {{ diary.likes }}</p>
+    </div>
   </div>
 </template>
 
@@ -22,7 +42,9 @@ export default {
   data() {
     return {
       diary: {},
-      isLiked: false
+      isLiked: false,
+      dialog: false,
+      dialogno: false
     };
   },
   computed: {
@@ -40,7 +62,6 @@ export default {
       axios.get(`/api/diaries/${diaryId}/check-like`, { params: { username } })
         .then(response => {
           this.isLiked = response.data;
-          // console.log(this.isLiked);
         })
         .catch(error => {
           console.error('Error checking like status:', error);
@@ -50,9 +71,12 @@ export default {
       const diaryId = this.diary.id;
       const username = this.username1;
       axios.post(`/api/diaries/${diaryId}/toggle-like`, null, { params: { username } })
-        .then(response => {
+        .then(() => {
           this.isLiked = !this.isLiked;
-          alert(response.data);   
+          if (this.isLiked == true)
+            this.dialog = true;
+          else
+            this.dialogno = true;
         })
         .catch(error => {
           console.error('Error toggling like status:', error);
@@ -83,7 +107,7 @@ export default {
   max-width: 800px;
   margin: 20px auto;
   padding: 20px;
-  background: #fff;
+  background-color: rgba(247, 247, 247, 0.9);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -101,7 +125,6 @@ export default {
 
 .back-button {
   left: 10px;
-  background-color:#ffffff;
   border: none;
   font-size: 24px;
   cursor: pointer;

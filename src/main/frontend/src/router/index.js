@@ -11,6 +11,7 @@ import EditDiary from '../views/EditDiary.vue';
 import CheckDiary from '../views/CheckDiary.vue';
 import DiaryDetails from '../views/DiaryDetails.vue';
 import MainPage from'../views/MainPage.vue';
+import PersonalDiary from '../views/PersonalDiary.vue';
 
 Vue.use(Router);
 
@@ -78,6 +79,12 @@ export default new Router({
       path: '/checkdiary',
       name: 'CheckDiary',
       component: CheckDiary,
+      meta: { requiresAuth: true }  // 需要登录才能访问
+    },
+    {
+      path: '/personaldiary',
+      name: 'PersonalDiary',
+      component: PersonalDiary,
       meta: { requiresAuth: true }  // 需要登录才能访问
     }
   ]

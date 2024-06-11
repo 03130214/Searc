@@ -1,13 +1,16 @@
 package com.example.searc.controller;
 
+import com.example.searc.dto.DiaryDTO;
 import com.example.searc.model.Diary;
 import com.example.searc.model.User_Diary;
 import com.example.searc.repository.DiaryRepository;
 import com.example.searc.repository.UserDiaryRepository;
 import com.example.searc.service.DiaryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,31 +28,51 @@ public class DiaryController {
     }
 
     @PostMapping("/diaries")
-    public ResponseEntity<?> createDiary(@RequestBody Diary diary) {
-        System.out.println(diary.toString());
+    public ResponseEntity<?> createDiary(@RequestBody DiaryDTO diary) throws IOException {
         diaryService.createDiary(diary);
         return ResponseEntity.ok(diary);
     }
 
     @GetMapping("/diaries")
-    public List<Diary> getDiaries(@RequestParam(required = false) String title, @RequestParam(required = false) String location) {
+    public List<DiaryDTO> getDiaries(@RequestParam(required = false) String title, @RequestParam(required = false) String location, @RequestParam(required = false) String content) {
         if (title != null && !title.isEmpty()) {
             return diaryService.findDiariesByTitle(title);
-        } else if ((location != null && !location.isEmpty())) {
+        }  else if ((location != null && !location.isEmpty())) {
             return diaryService.findDiariesByLocation(location);
-        } else {
+        }else if ((content != null && !content.isEmpty())) {
+            System.out.println(content);
+            return diaryService.findDiariesByContent(content);
+        }else {
             return diaryService.findAllDiaries();
         }
     }
-
+//
     @GetMapping("/diaries/{id}")
-    public ResponseEntity<Diary> getDiaryById(@PathVariable Long id) {
-        System.out.println(id);
-        Optional<Diary> diary = diaryRepository.findById(id);
-        return diary.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public DiaryDTO getDiaryById(@PathVariable Long id) {
+        return diaryService.findDiaryById(id);
+//        return diary.map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @GetMapping("/diaries/top")
+    public List<DiaryDTO> getTopDiariesByPopularity(@RequestParam int limit) {
+        return diaryService.findTopDiariesByPopularity(limit);
     }
 
+    @GetMapping("/diaries/by-user")
+    public ResponseEntity<List<DiaryDTO>> getDiariesByUsername(@RequestParam String username) {
+        List<DiaryDTO> diaries = diaryService.findDiariesByUsername(username);
+        return ResponseEntity.ok(diaries);
+    }
+
+    @PostMapping("/diaries/delete")
+    public ResponseEntity<?> deleteDiaries(@RequestBody List<Long> ids) {
+        try {
+            diaryRepository.deleteAllById(ids); // 删除所有指定的日记
+            return ResponseEntity.ok().build(); // 返回成功响应
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete diaries");
+        }
+    }
     @PostMapping("/diaries/{id}/incrementHot")
     public ResponseEntity<Diary> incrementDiaryHot(@PathVariable Long id) {
         return diaryRepository.findById(id)

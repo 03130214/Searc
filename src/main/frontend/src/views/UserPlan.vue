@@ -3,9 +3,9 @@
     <!-- 侧边栏组件 -->
     <SideBox />
     <div class="route-planner">
+      <h1 class="title">路线规划</h1>
       <el-row type="flex" justify="center">
-        <el-col :span="12">
-          <h1><font color="grey">路线规划</font></h1>
+        <el-col :span="12" class="colcontent">
           <!-- 表单，防止表单默认提交行为 -->
           <el-form @submit.native.prevent="handleSubmit">
             <!-- 起始地点输入框，自动完成 -->
@@ -190,10 +190,23 @@ export default {
   height: 100vh;
 }
 .route-planner {
-  width: 60vw;
+  margin-top: 5vh;
+  margin-left: 10vw;
+  width: 50vw;
+  height: 80vh;
   padding: 20px;
+  background-color: rgba(247, 247, 247, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
+
 .dialog-footer {
   text-align: right;
+}
+.colcontent{
+  margin-top: 5vh;
+}
+.title{
+  margin-left: 20vw;
 }
 </style>

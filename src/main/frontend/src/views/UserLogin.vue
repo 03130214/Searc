@@ -92,9 +92,9 @@ export default {
 
 .background-image {
   display: flex;
-  background-image: url('../assets/mainpage.jpg');
+  background-image: url('../assets/lonely.jpg');
   background-size: cover;
-  height: 98vh;
+  height: 100vh;
   width: 100%;
   justify-content: center;
 }
@@ -111,6 +111,9 @@ export default {
 
 input[type="text"],
 input[type="password"] {
+  border: 1px solid #000000;
+  border-radius: 8px;
+  background-color: white;
   width: 80%;
   padding: 8px;
   margin: 10px;

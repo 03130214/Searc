@@ -139,14 +139,15 @@ export default {
   height: 10vh;
   width: 60%; /* 搜索框宽度为右侧80%区域的60% */
   margin: 10px auto; /* 上下10px的外边距，左右自动 */
- /* 使用flex布局 */
   align-items: center; /* 垂直居中 */
   justify-content: center; /* 水平居中 */
   position: relative; /* 相对定位 */
 }
 
 .search-input {
+  margin-top: 5vh;
   width: 70%; /* 搜索输入框占60%的宽度 */
+  background-color: rgba(247, 247, 247, 0.9);
   padding: 10px; /* 内边距10px */
   border: 1px solid #ccc; /* 边框颜色和样式 */
   border-radius: 4px; /* 圆角 */
@@ -189,6 +190,6 @@ export default {
 
 #map {
   width: 50vw; /* 设置地图宽度为视口宽度的70% */
-  margin-top: 10vh;
+  margin-top: 5vh;
 }
 </style>
