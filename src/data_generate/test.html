@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Map with Numbered Markers</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        .number-icon {
+            background-color: #ff6347; /* Tomato color */
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            line-height: 22px;
+            width: 22px;
+            height: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" style="width: 800px; height: 800px;"></div>
+    <script>
+        var map = L.map('map').setView([39.9611, 116.3519], 17);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        var clickCount = 0; // 用于跟踪点击次数
+
+        function onMapClick(e) {
+            clickCount++; // 每次点击时增加计数
+
+            // 输出经纬度到控制台，保留四位小数，并按照指定格式显示
+            console.log("(" + e.latlng.lat.toFixed(4) + ", " + e.latlng.lng.toFixed(4) + "),");
+
+            // 创建一个包含数字的HTML元素作为标记图标
+            var icon = L.divIcon({
+                html: '<div class="number-icon">' + clickCount + '</div>',
+                className: 'number-icon',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            });
+
+            // 在点击位置添加一个新的标记，并使用自定义的数字图标
+            L.marker([e.latlng.lat, e.latlng.lng], {icon: icon}).addTo(map);
+        }
+
+        map.on('click', onMapClick);
+    </script>
+</body>
+</html>
